@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo "1: List SUID files"
+echo "2: List GUID files"
+echo "3: List sticky bit directories"
+echo "4: Start a sniffer"
+echo "5: Check SUID for users"
+echo "6: Check GUID for groups"
+echo "7: Check sticky bit for others"
+read choice
+
+case $choice in
+    1) 
+        sudo find / -type f -perm /4000 2>/dev/null
+        ;;
+    2) 
+        sudo find / -type f -perm /2000 2>/dev/null
+        ;;
+    3) 
+        sudo find / -type d -perm /1000 2>/dev/null
+        ;;
+    4)
+        echo "Interface:"
+        read interface
+        sudo tcpdump --interface $interface
+        ;;
+    5)
+        echo "Username:"
+        read username
+        sudo find / -user $username -perm /4000 2>/dev/null
+        ;;
+    6) 
+        echo "Group name:"
+        read group_name
+        sudo find / -group $group_name -perm /2000 2>/dev/null
+        ;;
+    7)
+        sudo find / -perm -o+t 2>/dev/null
+        ;;
+    *)
+        echo "Invalid choice. Please try again."
+        ;;
+esac

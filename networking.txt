@@ -1,0 +1,107 @@
+#!/bin/bash
+
+function list_interfaces() {
+    ip -br link | awk '{print $1}'
+}
+
+function list_ip() {
+    ip -o -4 addr show | awk '{print $4}'
+}
+
+function list_mac() {
+    ip link show | awk '/link/{print $2, $4}'
+}
+
+function change_ip() {
+    echo "Enter the name of the interface"
+    read interface
+    echo "Enter the new IP address"
+    read new_ip
+    if [[ $new_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        sudo ip addr add "$new_ip" dev "$interface"
+    else
+        echo "Invalid IP address"
+    fi
+}
+
+function list_ports_and_services() {
+    netstat -a | awk '{print $2}'
+}
+
+function disable_port() {
+    echo "Enter the port number to disable"
+    read port
+
+    if netstat -tuln | grep ":$port" >/dev/null; then
+        sudo iptables -A INPUT -p tcp --dport "$port" -j DROP
+    else
+        echo "Invalid or inactive port"
+    fi
+}
+
+function activate_port() {
+    echo "Enter the port number to activate"
+    read port
+
+    if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]; then
+        sudo iptables -D INPUT -p tcp --dport "$port" -j DROP
+    else
+        echo "Invalid port"
+    fi
+}
+
+function install_uninstall_service() {
+    echo "Enter the name of the service"
+    read service
+    echo "Do you want to install(1) or uninstall(2) the service?"
+    read choice
+
+    if [ $choice -eq 1 ]; then
+        sudo apt-get update
+        sudo apt-get install "$service"
+        sudo systemctl enable "$service"
+        sudo systemctl start "$service"
+    elif [ $choice -eq 2 ]; then
+        sudo systemctl stop "$service"
+        sudo systemctl disable "$service"
+        sudo apt-get remove "$service"
+    else
+        echo "Invalid choice. Please try again."
+    fi
+}
+
+function test_address(){
+    echo "Enter the adress to test"
+    read adresse
+    # limiter le nombre de paquets échangés à 4
+    ping -c 4 $adresse
+}
+
+while true
+do 
+    echo "1: List all network interfaces" 
+    echo "2: Display IP addresses of each network interface" 
+    echo "3: List MAC addresses of each network interface" 
+    echo "4: Change the IP address of an interface and verify if the new address is valid" 
+    echo "5: List ports and services" 
+    echo "6: Disable a port" 
+    echo "7: Activate a port" 
+    echo "8: Install/uninstall a service" 
+    echo "99: Exit" 
+
+    read choice 
+
+    case $choice in
+        1)  list_interfaces ;;
+        2)  list_ip ;;
+        3)  list_mac ;;
+        4)  change_ip ;;
+        5)  list_ports_and_services ;;
+        6)  disable_port ;;
+        7)  activate_port ;;
+        8)  install_uninstall_service ;;
+	9)  test_address ;;
+        99) exit 0 ;;
+        *)  echo "Invalid choice. Please try again." ;;
+    esac
+done

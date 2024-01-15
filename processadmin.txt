@@ -1,0 +1,41 @@
+#!/bin/bash
+
+while true
+do
+    echo "1: Lister les processus"
+    echo "2: Afficher les parents du processus"
+    echo "3: Afficher tous les processus enfants d'un processus donné"
+    echo "4: Deconnecter un utilisateur"
+
+    read choice
+
+    case $choice in
+        1) 
+            ps --sort=pid -eo user,pid,ppid
+            ;;
+        2) 
+            echo "Process id : "
+            read proc
+            parent=$proc
+            while [ $proc -ne 1 ]
+            do
+                parent=$(ps -f --pid=$proc | tail -n+2 | awk '{print $3}')
+                ps -f --pid=$parent | awk '{print $1, $2, $3}'
+                proc=$parent
+            done
+            ;;
+        3) 
+            echo "Process id :"
+            read proc
+            ps -f --ppid=$proc | awk '{print $1, $2, $3}'
+            ;;
+        4) 
+            echo "User :"
+            read user
+            sudo pkill -u $user
+            ;;
+        *) 
+            echo "Invalid choice. Please try again."
+            ;;
+    esac
+done

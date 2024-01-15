@@ -1,0 +1,41 @@
+#!/bin/bash
+
+while true
+do
+    echo "1: Lister les modules actifs"
+    echo "2: Description des modules"
+    echo "3: Activer un module"
+    echo "4: Desactiver un module"
+    echo "5: Quitter"
+    echo "Tapez votre choix"
+    read choix
+
+    case $choix in
+        1)
+            lsmod | awk '{print $1}'
+            ;;
+        2)
+            for module in $(lsmod | tail -n+2 | cut -d ' ' -f1)
+            do
+                echo $module
+                modinfo --field=description $module
+            done
+            ;;
+        3)
+            echo "Donnez le module a activer"
+            read mod
+            sudo modprobe $mod
+            ;;
+        4)
+            echo "Donnez le module a desactiver"
+            read mod
+            sudo rmmod $mod
+            ;;
+        5)
+            exit
+            ;;
+        *)
+            echo "Choix invalide. Veuillez réessayer."
+            ;;
+    esac
+done

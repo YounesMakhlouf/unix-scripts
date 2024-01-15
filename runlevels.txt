@@ -1,0 +1,19 @@
+#!/bin/bash
+while true
+do 
+    echo "1: Display current runlevel" 
+    echo "2: Display shutdown applications" 
+    echo "3: Display all startup applications" 
+    echo "4: Shutdown the system" 
+    echo "99: Exit" 
+    read choice 
+
+    case $choice in
+        1)  runlevel | awk '{print $2}' ;;
+        2)  ls /etc/rc0.d ;;
+        3)  ls /etc/init.d ;;
+        4)  init 0 ;;
+        99) exit 0 ;;
+        *)  echo "Invalid choice. Please try again." ;;
+    esac
+done
